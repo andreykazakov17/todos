@@ -53,6 +53,24 @@ const clearCompleted = () => {
     console.log(todosArr);
 }
 
+const onFiltersHandler = (e) => {
+    if (e.target.tagName !== 'BUTTON') return;
+    todoList.innerHTML = '';
+    const filterDataset = e.target.dataset['btn'];
+
+    todosArr.forEach((item) => {
+        
+        if (filterDataset === 'completed' && item.completed) {
+            renderTodoItem(item);
+        } else if (filterDataset === 'active' && !item.completed) {
+            renderTodoItem(item);
+        } else if (filterDataset === 'all') {
+            renderTodos();
+        }
+
+    });
+}
+
 // Event Listeners
 todoButton.addEventListener('click', onClickHandler);
 todoList.addEventListener('click', onDeleteHadler);
@@ -63,6 +81,7 @@ completeAllBtn.addEventListener('click', (e) => {
     render();
 });
 clearCompletedBtn.addEventListener('click', clearCompleted);
+filtersList.addEventListener('click', onFiltersHandler);
 
 let todosArr = [];
 
@@ -144,7 +163,7 @@ const renderTodoCounter = () => {
 }
 
 const renderToggleIcon = (todosArr) => {
-    console.log(todosArr);
+    //console.log(todosArr);
     if (todosArr.length) {
         completeAllBtn.style.display = 'block';
     } else {
@@ -206,32 +225,3 @@ const render = () => {
     renderTodos();
     renderTodoCounter();
 }
-
-
-// Creating buttons array
-
-
-// function filterTodos(items, filter) {
-//     console.log(typeof filter);
-//     switch(filter) {
-//         case 'active':
-//             console.log('active')
-//             items.filter((item) => !item.completed);
-//             renderTodos();
-//             break;
-//         case 'completed':
-//             console.log('completed')
-//             items.filter((item) => item.completed);
-//             renderTodos();
-//         default:
-//             return items;
-//     }
-// }
-
-// function showCompleted() {
-//     console.log("Show completed");
-// }
-
-// function onFilterSelect() {
-//     filterTodos(todosArr, )
-// }
