@@ -8,45 +8,90 @@ let filtersList = document.querySelector('.todo-filters-list');
 const clearCompletedBtn = document.querySelector('.todo-clear');
 
 
+// Event function on input
+const onClickHandler = (e) => {
+    e.preventDefault();
+
+
+    const target = e.target;
+    const id = target.parentElement.getAttribute('data-id');
+
+    if (todoInput.value !== '') {
+        addTodo(todoInput.value);
+        render();
+    }
+    todoInput.value = '';
+}
+
+const onDeleteHadler = (e) => {
+    const id = findTodoId(e);
+
+    console.log(id);
+
+    if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
+        return;
+    }
+
+    deleteTodo(id);
+    render();
+}
+
+const onCheckHadler = (e) => {
+    const id = findTodoId(e);
+
+    if (!(e.target.dataset.complete === 'complete')) {
+        return;
+    }
+
+    todosArr = checkTodo(id);
+    render();
+}
+
+const clearCompleted = () => {
+    todosArr = todosArr.filter((item) => !item.completed);
+    render();
+    console.log(todosArr);
+}
+
 // Event Listeners
-todoButton.addEventListener('click', onClick);
-todoList.addEventListener('click', onDelete);
-todoList.addEventListener('click', onCheck);
+todoButton.addEventListener('click', onClickHandler);
+todoList.addEventListener('click', onDeleteHadler);
+todoList.addEventListener('click', onCheckHadler);
 completeAllBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    toggleAllTodos(checkAllTodos, uncheckAllTodos);
+    toggleAllTodos();
+    render();
 });
 clearCompletedBtn.addEventListener('click', clearCompleted);
 
 let todosArr = [];
 
-// Creating todo object
 const createTodo = (text) => ({
     text,
     completed: false,
     id: new Date().getTime()
 });
 
-// Adding todo object in array
 const addTodo = (inputValue) => {
     const newTodo = createTodo(inputValue);
     todosArr.push(newTodo);
 }
 
-// Deleting todo object from array
 const deleteTodo = (id) => {
     todosArr = todosArr.filter((item) => item.id !== id);
 }
 
-// Checking todo object in array
 const checkTodo = (id) => {
-    todosArr.forEach((item) => {
-        if(id === item.id && item.completed === false) {
-            item.completed = true;
-        } else if (id === item.id && item.completed === true) {
-            item.completed = false;
-        }
-    });
+    // return todosArr.map((item) => {
+    //     if(id === item.id && !item.completed) {
+    //         return {...item, completed: true}
+    //     } else if (id === item.id && item.completed) {
+    //         return {...item, completed: false}
+    //     }
+    //     console.log(todosArr);
+    // })
+    return todosArr.map((item) => item.id === id ? { ...item, completed: !item.completed } : item);
+    
 }
 
 
@@ -65,8 +110,6 @@ const renderTodoItem = ({id, completed, text}) => {
     completedBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
     completedBtn.classList.add('complete-btn');
     completedBtn.setAttribute('data-complete', 'complete');
-    // console.log(newTodo);
-    // console.log(todosArr);
     if (completed) {
         newTodo.classList.add('checked');
         newTodo.classList.add('completed');
@@ -88,16 +131,21 @@ const countTodos = () => {
     return todosArr.length;
 }
 
-// Render all todo list
 const renderTodos = () => {
 
     todoList.innerHTML = '';
-
     todosArr.forEach((item) => {
         renderTodoItem(item);
     });
+}
 
-    if (todosArr.length > 0) {
+const renderTodoCounter = () => {
+    filterPanel.childNodes[1].innerText = `Total: ${countTodos()}`;
+}
+
+const renderToggleIcon = (todosArr) => {
+    console.log(todosArr);
+    if (todosArr.length) {
         completeAllBtn.style.display = 'block';
     } else {
         completeAllBtn.style.display = 'none';
@@ -108,25 +156,6 @@ const renderTodos = () => {
     } else {
         filterPanel.style.visibility = 'hidden';
     }
-
-    filterPanel.childNodes[1].innerText = `Total: ${countTodos()}`;
-    console.log(todosArr);
-}
-
-// Event function on input
-function onClick(e) {
-    e.preventDefault();
-
-    const target = e.target;
-    const id = target.parentElement.getAttribute('data-id');
-
-    if (todoInput.value !== '') {
-        addTodo(todoInput.value);
-        renderTodos();
-    }
-    todoInput.value = '';
-    
-    
 }
 
 const findTodoId = (e) => {
@@ -135,77 +164,47 @@ const findTodoId = (e) => {
     return +todo.getAttribute('data-id');
 }
 
-// Delete event handler function
-function onDelete(e) {
-    const id = findTodoId(e);
+const checkAllTodos = (todosArr) => {
 
-    console.log(id);
-
-    if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
-        return;
-    }
-
-
-    deleteTodo(id);
-    renderTodos();
-}
-
-// Checking event handler function
-function onCheck(e) {
-    const id = findTodoId(e);
-
-    if (!(e.target.dataset.complete === 'complete')) {
-        return;
-    }
-
-    checkTodo(id);
-    renderTodos();
-}
-
-
-function checkAllTodos() {
-
-    todosArr.forEach((item) => {
-        item.completed = true;
-        renderTodos();
+    return todosArr.map((item) => {
+        return {...item, completed: true}
     });
-    return 'checked';
 }
 
-function uncheckAllTodos() {
+// const uncheckAllTodos = (todosArr) => 
+//     retutodosArr.map((item) => ({...item, completed: false})
+// );
 
-    todosArr.forEach((item) => {
-        item.completed = false;
-        renderTodos();
-    })
-
-    return 'unchecked';
+const uncheckAllTodos = (todosArr) => {
+    
+    return todosArr.map((item) => {
+        return {...item, completed: false}
+    });
 }
 
-
-function toggleAllTodos(checkFunc, uncheckFunc) {
+const toggleAllTodos = () => {
 
     const everyUnchecked = todosArr.every((item) => !item.completed);
     const someChecked = todosArr.some((item) => item.completed);
     const everyChecked = todosArr.every((item) => item.completed);
 
-    if (everyUnchecked) {
-        console.log('everyUnchecked', everyUnchecked);
-        checkFunc();
-    } else if (everyChecked) {
-        console.log('everyChecked', everyChecked);
-        uncheckFunc();
-    } else if (someChecked) {
-        console.log('someChecked', someChecked);
-        checkFunc();
+    if (everyChecked) {
+        todosArr = uncheckAllTodos(todosArr);
+        return;
+    }
+
+    if (everyUnchecked || someChecked) {
+        console.log("call");
+        todosArr = checkAllTodos(todosArr);
+        return;
     }
 }
 
-
-function clearCompleted() {
-    todosArr = todosArr.filter((item) => !item.completed);
+// Total render
+const render = () => {
+    renderToggleIcon(todosArr);
     renderTodos();
-    console.log(todosArr);
+    renderTodoCounter();
 }
 
 
