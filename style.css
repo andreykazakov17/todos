@@ -20,7 +20,7 @@ header, form {
 
 form input, form button {
     padding: 1rem;
-    font-size: 1.5rem;
+    font-size: 1rem;
     border: none;
     background: white;
     box-shadow: inset 0 -2px 1px rgb(0 0 0 / 3%);
@@ -33,6 +33,11 @@ form button {
 
 .todo-button:hover {
     color: green;
+}
+
+.todo-form {
+    position: relative;
+    min-width: 30rem;
 }
 
 .todo-input {
@@ -93,7 +98,7 @@ form button {
     margin: 0.5rem;
     background: white;
     color: black;
-    font-size: 1.5rem;
+    font-size: 18px;
     align-items: center;
     display: flex;
     justify-content: flex-start;
@@ -131,4 +136,54 @@ form button {
 
 .checked {
     color: green;
+}
+
+/* .complete-all-btn {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 25px;
+} */
+
+.todo-filters {
+    visibility: hidden;
+    height: 2rem;
+    width: 30rem;
+    margin: 0 auto;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.todo-filters-list {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.todo-clear {
+    font-size: 12px;
+    width: 180px;
+    border: none;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.todo-filters-item {
+    font-size: 12px;
+    width: 60px;
+    height: 2rem;
+    border: none;
+    background: #fff;
+}
+
+.todo-total {
+    font-size: 14px;
+    width: 100px;
 }

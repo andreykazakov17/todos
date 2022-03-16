@@ -17,15 +17,35 @@
 		<h1>todos</h1>
 	</header>
 
-	<form>
+	<form class="todo-form">
+		
 		<input type="text" class="todo-input" placeholder="What needs to be done?">
 		<button class="todo-button" type="submit">
 			<i class="fas fa-plus-square"></i>
+		</button>
+		<button class="complete-all-btn" data-complete-all="complete-all">
+			<i class="fa-solid fa-arrow-down"></i>
 		</button>
 	</form>
 
 	<div class="todo-container">
 		<ul class="todo-list"></ul>
+	</div>
+
+	<div class="todo-filters">
+		<div class="todo-total"></div>
+		<ul class="todo-filters-list">
+			<li>
+				<button data-all="all" class="todo-filters-item show-all-btn">All</button>
+			</li>
+			<li>
+				<button data-active="active" class="todo-filters-item show-active-btn">Active</button>
+			</li>
+			<li>
+				<button data-completed-all="completed-all" class="todo-filters-item show-completed-btn">Completed</button>
+			</li>
+		</ul>
+		<button data-clear="clear-all" class="todo-clear">Clear completed</button>
 	</div>
 
 	<script src="./app.js"></script>

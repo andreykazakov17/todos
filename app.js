@@ -2,28 +2,55 @@
 const todoInput = document.querySelector('.todo-input');
 const todoButton = document.querySelector('.todo-button');
 const todoList = document.querySelector('.todo-list');
+const completeAllBtn = document.querySelector('.complete-all-btn');
+const filterPanel = document.querySelector('.todo-filters');
+let filtersList = document.querySelector('.todo-filters-list');
+const clearCompletedBtn = document.querySelector('.todo-clear');
+
 
 // Event Listeners
 todoButton.addEventListener('click', onClick);
-todoList.addEventListener('click', onCheckDelete);
+todoList.addEventListener('click', onDelete);
+todoList.addEventListener('click', onCheck);
+completeAllBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleAllTodos(checkAllTodos, uncheckAllTodos);
+});
+clearCompletedBtn.addEventListener('click', clearCompleted);
 
 let todosArr = [];
 
-// Создание объекта todo
+// Creating todo object
 const createTodo = (text) => ({
     text,
     completed: false,
-    id: new Date().getTime(),
-    active: true
+    id: new Date().getTime()
 });
 
-// Добавление объекта todo в массив
+// Adding todo object in array
 const addTodo = (inputValue) => {
     const newTodo = createTodo(inputValue);
     todosArr.push(newTodo);
 }
 
-// Рендер todo item
+// Deleting todo object from array
+const deleteTodo = (id) => {
+    todosArr = todosArr.filter((item) => item.id !== id);
+}
+
+// Checking todo object in array
+const checkTodo = (id) => {
+    todosArr.forEach((item) => {
+        if(id === item.id && item.completed === false) {
+            item.completed = true;
+        } else if (id === item.id && item.completed === true) {
+            item.completed = false;
+        }
+    });
+}
+
+
+// Rendering todo item
 const renderTodoItem = ({id, completed, text}) => {
     
     const newTodo = document.createElement('li');
@@ -37,9 +64,10 @@ const renderTodoItem = ({id, completed, text}) => {
     const completedBtn = document.createElement('button');
     completedBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
     completedBtn.classList.add('complete-btn');
-    console.log(newTodo);
-    console.log(todosArr);
-    if (completed === true) {
+    completedBtn.setAttribute('data-complete', 'complete');
+    // console.log(newTodo);
+    // console.log(todosArr);
+    if (completed) {
         newTodo.classList.add('checked');
         newTodo.classList.add('completed');
     } else {
@@ -52,22 +80,40 @@ const renderTodoItem = ({id, completed, text}) => {
     const trashBtn = document.createElement('button');
     trashBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
     trashBtn.classList.add('trash-btn');
+    trashBtn.setAttribute('data-trash', 'trash');
     newTodo.appendChild(trashBtn);
 }
 
-// Рендер всего списка todo
+const countTodos = () => {
+    return todosArr.length;
+}
+
+// Render all todo list
 const renderTodos = () => {
 
     todoList.innerHTML = '';
 
     todosArr.forEach((item) => {
-        if (item.active !== false) {
-            renderTodoItem(item);
-        }
+        renderTodoItem(item);
     });
+
+    if (todosArr.length > 0) {
+        completeAllBtn.style.display = 'block';
+    } else {
+        completeAllBtn.style.display = 'none';
+    }
+
+    if (todosArr.length !== 0) {
+        filterPanel.style.visibility = 'visible';
+    } else {
+        filterPanel.style.visibility = 'hidden';
+    }
+
+    filterPanel.childNodes[1].innerText = `Total: ${countTodos()}`;
+    console.log(todosArr);
 }
 
-
+// Event function on input
 function onClick(e) {
     e.preventDefault();
 
@@ -80,34 +126,113 @@ function onClick(e) {
     }
     todoInput.value = '';
     
+    
 }
 
-// Функция обработки ивента отметки / удаления
-function onCheckDelete(e) {
+const findTodoId = (e) => {
     const target = e.target;
     const todo = target.parentElement;
-    const id = +todo.getAttribute('data-id');
+    return +todo.getAttribute('data-id');
+}
 
-    console.log(target.classList.value === 'trash-btn');
+// Delete event handler function
+function onDelete(e) {
+    const id = findTodoId(e);
+
+    console.log(id);
+
+    if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
+        return;
+    }
+
+
+    deleteTodo(id);
+    renderTodos();
+}
+
+// Checking event handler function
+function onCheck(e) {
+    const id = findTodoId(e);
+
+    if (!(e.target.dataset.complete === 'complete')) {
+        return;
+    }
+
+    checkTodo(id);
+    renderTodos();
+}
+
+
+function checkAllTodos() {
 
     todosArr.forEach((item) => {
-        if(id === item.id && item.completed === false && target.classList.value === 'complete-btn') {
-            item.completed = true;
-            renderTodos();
-        } else if (id === item.id && item.completed === true && target.classList.value === 'complete-btn') {
-            item.completed = false;
-            renderTodos();
-        } else if (id === item.id && target.classList.value === 'trash-btn') {
-            item.active = false;
-            renderTodos();
-        }
+        item.completed = true;
+        renderTodos();
     });
+    return 'checked';
 }
 
-// Удаление задачи
-function deleteTodo(id) {
+function uncheckAllTodos() {
 
-    const index = todosArr.find((item) => item.id === id);
-    const deletedItem = todosArr.splice(index, 1);
-    console.log(deletedItem);
+    todosArr.forEach((item) => {
+        item.completed = false;
+        renderTodos();
+    })
+
+    return 'unchecked';
 }
+
+
+function toggleAllTodos(checkFunc, uncheckFunc) {
+
+    const everyUnchecked = todosArr.every((item) => !item.completed);
+    const someChecked = todosArr.some((item) => item.completed);
+    const everyChecked = todosArr.every((item) => item.completed);
+
+    if (everyUnchecked) {
+        console.log('everyUnchecked', everyUnchecked);
+        checkFunc();
+    } else if (everyChecked) {
+        console.log('everyChecked', everyChecked);
+        uncheckFunc();
+    } else if (someChecked) {
+        console.log('someChecked', someChecked);
+        checkFunc();
+    }
+}
+
+
+function clearCompleted() {
+    todosArr = todosArr.filter((item) => !item.completed);
+    renderTodos();
+    console.log(todosArr);
+}
+
+
+// Creating buttons array
+
+
+// function filterTodos(items, filter) {
+//     console.log(typeof filter);
+//     switch(filter) {
+//         case 'active':
+//             console.log('active')
+//             items.filter((item) => !item.completed);
+//             renderTodos();
+//             break;
+//         case 'completed':
+//             console.log('completed')
+//             items.filter((item) => item.completed);
+//             renderTodos();
+//         default:
+//             return items;
+//     }
+// }
+
+// function showCompleted() {
+//     console.log("Show completed");
+// }
+
+// function onFilterSelect() {
+//     filterTodos(todosArr, )
+// }
