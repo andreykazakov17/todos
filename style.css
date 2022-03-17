@@ -169,7 +169,7 @@ form button {
 
 .todo-clear {
     font-size: 12px;
-    width: 180px;
+    width: 150px;
     border: none;
     border-radius: 15px;
     background: #fff;
@@ -186,4 +186,10 @@ form button {
 .todo-total {
     font-size: 14px;
     width: 100px;
+}
+
+.active-btn {
+    color: rgb(0, 116, 0);
+    font-size: 14px;
+    font-weight: bold;
 }
