@@ -10,11 +10,9 @@ let filtersList = document.querySelector('.todo-filters-list');
 let todosArr = [];
 const filterBtns = Object.values(filtersList.children);
 
-let classesArr = filterBtns.map((item) => {
-    return item.classList.value;
-})
-
-console.log(classesArr);
+// let classesArr = filterBtns.map((item) => {
+//     return item.classList.value;
+// });
 
 // Utils
 const createTodo = (text) => ({
@@ -27,12 +25,25 @@ const countTodos = () => {
     return todosArr.length;
 }
 
+const updateClassesArr = () => {
+    return filterBtns.map((item) => {
+        return item.classList.value;
+    });
+}
+
+const deleteActiveClass = () => {
+    for(let btn of Object.values(filtersList.children)) {
+        btn.classList.remove('active-btn');
+    }
+}
+
 
 // Todo function with data
 
 const clearCompleted = () => {
     todosArr = todosArr.filter((item) => !item.completed);
     render();
+    setLocalStorage();
     console.log(todosArr);
 }
 
@@ -94,7 +105,6 @@ const toggleAllTodos = () => {
     }
 
     if (everyUnchecked || someChecked) {
-        console.log("call");
         todosArr = checkAllTodos(todosArr);
         return;
     }
@@ -133,7 +143,7 @@ const renderTodoItem = ({id, completed, text}) => {
 }
 
 const renderToggleIcon = (todosArr) => {
-    console.log(todosArr);
+    //console.log(todosArr);
     if (todosArr.length) {
         completeAllBtn.style.display = 'block';
     } else {
@@ -169,41 +179,93 @@ const render = () => {
 // Handlers
 const onClickHandler = (e) => {
     e.preventDefault();
-
-
     const target = e.target;
     const id = target.parentElement.getAttribute('data-id');
 
-    if (todoInput.value !== '') {
+    let classesArr = updateClassesArr();
+    // console.log(todosArr);
+    // console.log(classesArr[2]);
+
+    if (todoInput.value !== '' && classesArr[2] === 'todo-filters-item active-btn') {
+        console.log('Completed');
+        addTodo(todoInput.value);
+    } else if (todoInput.value !== '' && classesArr[1] === 'todo-filters-item active-btn') {
+        addTodo(todoInput.value);
+        console.log('Active');
+        renderTodoItem(todosArr[todosArr.length - 1]);
+    } else if (todoInput.value !== '' && !(classesArr[1] === 'todo-filters-item active-btn')) {
         addTodo(todoInput.value);
         render();
-    }
+        
+        // todosArr.forEach((item) => {
+        //     if(!item.completed) {
+        //         renderTodoItem(item);
+        //     }
+        // })
+        
+    } 
+
     todoInput.value = '';
 }
 
 const onDeleteHandler = (e) => {
     const id = findTodoId(e);
-
-    console.log(id);
+    let classesArr = updateClassesArr();
 
     if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
         return;
     }
+
 
     deleteTodo(id);
     setLocalStorage();
     render();
 }
 
+
 const onCheckHandler = (e) => {
     const id = findTodoId(e);
+    let classesArr = updateClassesArr();
 
     if (!(e.target.dataset.complete === 'complete')) {
         return;
     }
 
-    todosArr = checkTodo(id);
-    render();
+    if (classesArr[2] === 'todo-filters-item active-btn') {
+
+        todosArr = checkTodo(id);
+        todoList.innerHTML = '';
+        todosArr.forEach((item) => {
+            if (item.completed) {
+                renderTodoItem(item);
+            } else {
+
+
+                //renderTodoItem(item);
+                deleteActiveClass();
+                //filtersList.children[0].classList.add('active-btn');
+                
+
+            }
+        });
+        
+       
+
+    } else if (classesArr[1] === 'todo-filters-item active-btn') {
+        todosArr = checkTodo(id);
+        todoList.innerHTML = '';
+        todosArr.forEach((item) => {
+            if (!item.completed) {
+                renderTodoItem(item);
+            }
+        });
+    } else {
+        todosArr = checkTodo(id);
+        render();
+    }
+
+    // todosArr = checkTodo(id);
+    // render();
 }
 
 const onFiltersHandler = (e) => {
@@ -221,15 +283,14 @@ const onFiltersHandler = (e) => {
             e.target.classList.add('active-btn');
             console.log(todosArr);
             renderTodoItem(item);
-            
         } else if (filterDataset === 'active' && !item.completed) {
             e.target.classList.add('active-btn');
-            console.log(todosArr);
+            //console.log(todosArr);
             renderTodoItem(item);
             //renderTodos();
         } else if (filterDataset === 'all') {
             e.target.classList.add('active-btn');
-            console.log(todosArr);
+            //console.log(todosArr);
             renderTodos();
         }
 
