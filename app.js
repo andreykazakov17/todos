@@ -5,16 +5,11 @@ const todoList = document.querySelector('.todo-list');
 const completeAllBtn = document.querySelector('.complete-all-btn');
 const filterPanel = document.querySelector('.todo-filters');
 const clearCompletedBtn = document.querySelector('.todo-clear');
-const parsedArr = JSON.parse(localStorage.getItem('todosArr'));
 let filtersList = document.querySelector('.todo-filters-list');
 let todosArr = [];
 const filterBtns = Object.values(filtersList.children);
 let filter = 'all';
 
-
-// let classesArr = filterBtns.map((item) => {
-//     return item.classList.value;
-// });
 
 // Utils
 const createTodo = (text) => ({
@@ -52,18 +47,30 @@ const activeFilter = (e) => {
     return e.target.dataset['btn'];
 }
 
+const getLocalStorage = (key) => {
+    if(localStorage.getItem(key) && localStorage.getItem('todosArr') !== null) {
+        todosArr = parsedArr;
+    }
+}
+
+const clearLocalStorage = () => {
+    localStorage.removeItem('todosArr');
+}
+
+const setLocalStorage = () => {
+    const serializedArr = JSON.stringify(todosArr);
+    localStorage.setItem('todosArr', serializedArr);
+}
+
 
 // Todo function with data
 const filterTodos = (items, filter) => {
     switch (filter) {
         case "active":
-            console.log('active');
             return items.filter((item) => !item.completed);
         case "completed":
-            console.log('completed');
             return items.filter((item) => item.completed);
         default:
-            console.log('all');
             return items;
     }
 }
@@ -71,8 +78,7 @@ const filterTodos = (items, filter) => {
 const clearCompleted = () => {
     todosArr = todosArr.filter((item) => !item.completed);
     render();
-    setLocalStorage();
-    console.log(todosArr);
+    clearLocalStorage();
 }
 
 const addTodo = (inputValue) => {
@@ -110,10 +116,6 @@ const checkAllTodos = (todosArr) => {
     });
 }
 
-// const uncheckAllTodos = (todosArr) => 
-//     retutodosArr.map((item) => ({...item, completed: false})
-// );
-
 const uncheckAllTodos = (todosArr) => {
     
     return todosArr.map((item) => {
@@ -142,10 +144,18 @@ const toggleAllTodos = () => {
 const renderTodoItem = ({id, completed, text}) => {
     
     const newTodo = document.createElement('li');
+    const textInput = document.createElement('input');
+
+    textInput.setAttribute('type', 'text');
+    textInput.setAttribute('value', text);
+    textInput.setAttribute('placeholder', text);
+    textInput.classList.add('text-input');
+    textInput.setAttribute('onmousedown', 'return false');
 
     newTodo.setAttribute("data-id", id);
-    newTodo.innerText = text;
+    //newTodo.innerText = text;
     newTodo.classList.add('todo-item');
+    newTodo.appendChild(textInput);
     todoList.appendChild(newTodo);
 
     // Check button
@@ -171,16 +181,11 @@ const renderTodoItem = ({id, completed, text}) => {
 }
 
 const renderToggleIcon = (todosArr) => {
-    //console.log(todosArr);
     if (todosArr.length) {
         completeAllBtn.style.display = 'block';
-    } else {
-        completeAllBtn.style.display = 'none';
-    }
-
-    if (todosArr.length !== 0) {
         filterPanel.style.visibility = 'visible';
     } else {
+        completeAllBtn.style.display = 'none';
         filterPanel.style.visibility = 'hidden';
     }
 }
@@ -192,7 +197,7 @@ const renderTodoCounter = () => {
 const renderTodos = () => {
 
     todoList.innerHTML = '';
-    todosArr.forEach((item) => {
+    filterTodos(todosArr, filter).forEach((item) => {
         renderTodoItem(item);
     });
 }
@@ -207,135 +212,51 @@ const render = () => {
 // Handlers
 const onFiltersHandler = (e) => {
     filter = activeFilter(e);
-    
-    todoList.innerHTML = '';
-    filterTodos(todosArr, filter).forEach((item) => {
-        renderTodoItem(item);
-    })
-    //console.log(todosArr);
-    //return filterTodos(todosArr, filter);
+    render();
 }
 
 const onClickHandler = (e) => {
     e.preventDefault();
 
-    let classesArr = updateClassesArr();
-    // console.log(todosArr);
-    //console.log(classesArr);
+    if (todoInput.value === '') {
+        return;
+    }
 
-    if (todoInput.value !== '' && classesArr[2] === 'todo-filters-item active-btn') {
-        console.log('Completed');
-        addTodo(todoInput.value);
-    } else if (todoInput.value !== '' && classesArr[1] === 'todo-filters-item active-btn') {
-        addTodo(todoInput.value);
-        console.log('Active');
-        renderTodoItem(todosArr[todosArr.length - 1]);
-    } else if (todoInput.value !== '' && !(classesArr[1] === 'todo-filters-item active-btn')) {
-        addTodo(todoInput.value);
-        render();
-        
-        // todosArr.forEach((item) => {
-        //     if(!item.completed) {
-        //         renderTodoItem(item);
-        //     }
-        // })
-        
-    } 
-
+    addTodo(todoInput.value);
     todoInput.value = '';
+    render();
 }
 
 
 
 const onDeleteHandler = (e) => {
     const id = findTodoId(e);
-    let classesArr = updateClassesArr();
 
     if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
         return;
     }
 
     deleteTodo(id);
-    setLocalStorage();
+    
     render();
+    if(todosArr.length === 0) {
+        console.log('clearLocalStorage');
+        console.log(todosArr);
+        clearLocalStorage();
+    }
 }
 
 
 const onCheckHandler = (e) => {
     const id = findTodoId(e);
-    let classesArr = updateClassesArr();
 
     if (!(e.target.dataset.complete === 'complete')) {
         return;
     }
 
     todosArr = checkTodo(id);
-    console.log('render');
-
     render();
-
-    // if (classesArr[2] === 'todo-filters-item active-btn') {
-
-    //     todosArr = checkTodo(id);
-    //     todoList.innerHTML = '';
-    //     todosArr.forEach((item) => {
-    //         if (item.completed) {
-    //             renderTodoItem(item);
-    //         } else {
-
-
-    //             //renderTodoItem(item);
-    //             deleteActiveClass();
-    //             //filtersList.children[0].classList.add('active-btn');
-                
-
-    //         }
-    //     });
-        
-       
-
-    // } else if (classesArr[1] === 'todo-filters-item active-btn') {
-    //     todosArr = checkTodo(id);
-    //     todoList.innerHTML = '';
-    //     todosArr.forEach((item) => {
-    //         if (!item.completed) {
-    //             renderTodoItem(item);
-    //         }
-    //     });
-    // } else {
-    //     todosArr = checkTodo(id);
-    //     render();
-    // }
 }
-
-// const onFiltersHandler = (e) => {
-//     if (e.target.tagName !== 'BUTTON') return;
-//     todoList.innerHTML = '';
-//     const filterDataset = e.target.dataset['btn'];
-
-//     for(let btn of Object.values(filtersList.children)) {
-//         btn.classList.remove('active-btn');
-//     }
-
-//     todosArr.forEach((item) => {
-        
-//         if (filterDataset === 'completed' && item.completed) {
-//             e.target.classList.add('active-btn');
-//             console.log(todosArr);
-//             renderTodoItem(item);
-//         } else if (filterDataset === 'active' && !item.completed) {
-//             e.target.classList.add('active-btn');
-//             //console.log(todosArr);
-//             renderTodoItem(item);
-//             //renderTodos();
-//         } else if (filterDataset === 'all') {
-//             e.target.classList.add('active-btn');
-//             //console.log(todosArr);
-//             renderTodos();
-//         }
-
-//     });
-// }
 
 
 // Event Listeners
@@ -354,42 +275,61 @@ clearCompletedBtn.addEventListener('click', clearCompleted);
 filtersList.addEventListener('click', (e) => {
     onFiltersHandler(e);
 });
-
-
-
-
-// -----Local Storage
-
-
 todoButton.addEventListener('click', setLocalStorage);
 document.addEventListener('DOMContentLoaded', () => {
+    const parsedArr = JSON.parse(localStorage.getItem('todosArr'));
 
     if(parsedArr) {
         todosArr = parsedArr;
     }
-    renderTodoCounter();
-    renderToggleIcon(todosArr);
+    
     getLocalStorage(localStorage.getItem('todosArr'));
+    render();
 });
 
 
-function getLocalStorage(arr) {
-    if(localStorage.getItem('todosArr') === arr && localStorage.getItem('todosArr') !== null) {
-        //console.log(localStorage.getItem('todosArr').length);
-        todosArr = parsedArr;
-        todosArr.forEach((item) => {
-            renderTodoItem(item);
-        })
+// ---- Input Text Updating
+
+const updateTextHandler = (e) => {
+    updateInput(e);
+}
+
+const moveCaretToEnd = (inputObject) => {
+    if (inputObject.selectionStart)
+    {
+     let end = inputObject.value.length;
+     inputObject.setSelectionRange(end,end);
+     inputObject.focus();
     }
 }
 
 
-function setLocalStorage() {
-    const serializedArr = JSON.stringify(todosArr);
-    localStorage.setItem('todosArr', serializedArr);
-    //console.log(serializedArr);
+const updateInput = (e) => {
+    const target = e.target;
+    const valueLength = target.value.length;
+    const id = +e.target.parentElement.dataset['id'];
+    console.log(target.value);
 
-    if(localStorage.getItem('todosArr') === '[]') {
-        localStorage.removeItem('todosArr');
+    if (target.tagName !== 'LI' && target.tagName !== 'INPUT') return;
+
+    target.setAttribute('onmousedown', 'return true');
+    target.focus();
+    target.setSelectionRange(valueLength, valueLength);
+    const elem = todosArr.find((item) => item.id === id);
+
+    console.log(target.value);
+
+    target.onchange = function() {
+        elem.text = target.value;
+        console.log(todosArr);
+        setLocalStorage();
+        render();
+    }
+    
+    target.onblur = function() {
+        if(target.value === elem.text) {
+            target.setAttribute('onmousedown', 'return false');
+        }
     }
 }
+todoList.addEventListener('dblclick', updateTextHandler);

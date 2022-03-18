@@ -193,3 +193,16 @@ form button {
     font-size: 14px;
     font-weight: bold;
 }
+
+.text-input {
+    line-height: 35px;
+    font-size: 20px;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    min-width: 25px;
+    border: none;
+}
+
+.text-input::-webkit-input-placeholder {
+    color: rgb(0, 0, 0);
+}
