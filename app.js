@@ -9,6 +9,8 @@ const parsedArr = JSON.parse(localStorage.getItem('todosArr'));
 let filtersList = document.querySelector('.todo-filters-list');
 let todosArr = [];
 const filterBtns = Object.values(filtersList.children);
+let filter = 'all';
+
 
 // let classesArr = filterBtns.map((item) => {
 //     return item.classList.value;
@@ -37,8 +39,34 @@ const deleteActiveClass = () => {
     }
 }
 
+const activeFilter = (e) => {
+    if (e.target.tagName !== 'BUTTON') return;
+
+    for(let btn of Object.values(filtersList.children)) {
+        btn.classList.remove('active-btn');
+    }
+    
+
+    console.log(filter);
+    e.target.classList.add('active-btn');
+    return e.target.dataset['btn'];
+}
+
 
 // Todo function with data
+const filterTodos = (items, filter) => {
+    switch (filter) {
+        case "active":
+            console.log('active');
+            return items.filter((item) => !item.completed);
+        case "completed":
+            console.log('completed');
+            return items.filter((item) => item.completed);
+        default:
+            console.log('all');
+            return items;
+    }
+}
 
 const clearCompleted = () => {
     todosArr = todosArr.filter((item) => !item.completed);
@@ -177,14 +205,23 @@ const render = () => {
 
 
 // Handlers
+const onFiltersHandler = (e) => {
+    filter = activeFilter(e);
+    
+    todoList.innerHTML = '';
+    filterTodos(todosArr, filter).forEach((item) => {
+        renderTodoItem(item);
+    })
+    //console.log(todosArr);
+    //return filterTodos(todosArr, filter);
+}
+
 const onClickHandler = (e) => {
     e.preventDefault();
-    const target = e.target;
-    const id = target.parentElement.getAttribute('data-id');
 
     let classesArr = updateClassesArr();
     // console.log(todosArr);
-    // console.log(classesArr[2]);
+    //console.log(classesArr);
 
     if (todoInput.value !== '' && classesArr[2] === 'todo-filters-item active-btn') {
         console.log('Completed');
@@ -208,6 +245,8 @@ const onClickHandler = (e) => {
     todoInput.value = '';
 }
 
+
+
 const onDeleteHandler = (e) => {
     const id = findTodoId(e);
     let classesArr = updateClassesArr();
@@ -215,7 +254,6 @@ const onDeleteHandler = (e) => {
     if (e.target.dataset.trash !== 'trash' &&  e.target.dataset.clear !== 'clear-all') {
         return;
     }
-
 
     deleteTodo(id);
     setLocalStorage();
@@ -231,71 +269,73 @@ const onCheckHandler = (e) => {
         return;
     }
 
-    if (classesArr[2] === 'todo-filters-item active-btn') {
+    todosArr = checkTodo(id);
+    console.log('render');
 
-        todosArr = checkTodo(id);
-        todoList.innerHTML = '';
-        todosArr.forEach((item) => {
-            if (item.completed) {
-                renderTodoItem(item);
-            } else {
+    render();
+
+    // if (classesArr[2] === 'todo-filters-item active-btn') {
+
+    //     todosArr = checkTodo(id);
+    //     todoList.innerHTML = '';
+    //     todosArr.forEach((item) => {
+    //         if (item.completed) {
+    //             renderTodoItem(item);
+    //         } else {
 
 
-                //renderTodoItem(item);
-                deleteActiveClass();
-                //filtersList.children[0].classList.add('active-btn');
+    //             //renderTodoItem(item);
+    //             deleteActiveClass();
+    //             //filtersList.children[0].classList.add('active-btn');
                 
 
-            }
-        });
+    //         }
+    //     });
         
        
 
-    } else if (classesArr[1] === 'todo-filters-item active-btn') {
-        todosArr = checkTodo(id);
-        todoList.innerHTML = '';
-        todosArr.forEach((item) => {
-            if (!item.completed) {
-                renderTodoItem(item);
-            }
-        });
-    } else {
-        todosArr = checkTodo(id);
-        render();
-    }
-
-    // todosArr = checkTodo(id);
-    // render();
+    // } else if (classesArr[1] === 'todo-filters-item active-btn') {
+    //     todosArr = checkTodo(id);
+    //     todoList.innerHTML = '';
+    //     todosArr.forEach((item) => {
+    //         if (!item.completed) {
+    //             renderTodoItem(item);
+    //         }
+    //     });
+    // } else {
+    //     todosArr = checkTodo(id);
+    //     render();
+    // }
 }
 
-const onFiltersHandler = (e) => {
-    if (e.target.tagName !== 'BUTTON') return;
-    todoList.innerHTML = '';
-    const filterDataset = e.target.dataset['btn'];
+// const onFiltersHandler = (e) => {
+//     if (e.target.tagName !== 'BUTTON') return;
+//     todoList.innerHTML = '';
+//     const filterDataset = e.target.dataset['btn'];
 
-    for(let btn of Object.values(filtersList.children)) {
-        btn.classList.remove('active-btn');
-    }
+//     for(let btn of Object.values(filtersList.children)) {
+//         btn.classList.remove('active-btn');
+//     }
 
-    todosArr.forEach((item) => {
+//     todosArr.forEach((item) => {
         
-        if (filterDataset === 'completed' && item.completed) {
-            e.target.classList.add('active-btn');
-            console.log(todosArr);
-            renderTodoItem(item);
-        } else if (filterDataset === 'active' && !item.completed) {
-            e.target.classList.add('active-btn');
-            //console.log(todosArr);
-            renderTodoItem(item);
-            //renderTodos();
-        } else if (filterDataset === 'all') {
-            e.target.classList.add('active-btn');
-            //console.log(todosArr);
-            renderTodos();
-        }
+//         if (filterDataset === 'completed' && item.completed) {
+//             e.target.classList.add('active-btn');
+//             console.log(todosArr);
+//             renderTodoItem(item);
+//         } else if (filterDataset === 'active' && !item.completed) {
+//             e.target.classList.add('active-btn');
+//             //console.log(todosArr);
+//             renderTodoItem(item);
+//             //renderTodos();
+//         } else if (filterDataset === 'all') {
+//             e.target.classList.add('active-btn');
+//             //console.log(todosArr);
+//             renderTodos();
+//         }
 
-    });
-}
+//     });
+// }
 
 
 // Event Listeners
@@ -311,7 +351,9 @@ completeAllBtn.addEventListener('click', (e) => {
     render();
 });
 clearCompletedBtn.addEventListener('click', clearCompleted);
-filtersList.addEventListener('click', onFiltersHandler);
+filtersList.addEventListener('click', (e) => {
+    onFiltersHandler(e);
+});
 
 
 
