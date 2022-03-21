@@ -7,6 +7,8 @@ body {
 
 header h1 {
     font-size: 7.5rem;
+    display: flex;
+    justify-content: center;
 }
 
 header, form {
@@ -35,10 +37,10 @@ form button {
     color: green;
 }
 
-.todo-form {
+/* .todo-form {
     position: relative;
     min-width: 30rem;
-}
+} */
 
 .todo-input {
     padding: 16px 16px 16px 60px;
@@ -52,23 +54,22 @@ form button {
     word-wrap: inherit;
 }
 
-.todo-button {
+/* .todo-button {
     border-top-left-radius: 0px;
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;
     border-bottom-left-radius: 0px;
-}
+} */
 
 .todo-container {
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .todo-list {
     padding: 0;
-    min-width: 30%;
     list-style: none;
+    display: block;
     margin: 0 auto;
 }
 
@@ -138,12 +139,12 @@ form button {
     color: green;
 }
 
-/* .complete-all-btn {
-    border-top-left-radius: 25px;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 25px;
-} */
+.complete-all-btn {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    border-bottom-left-radius: 0px;
+}
 
 .todo-filters {
     visibility: hidden;
@@ -194,15 +195,25 @@ form button {
     font-weight: bold;
 }
 
-.text-input {
+.todo-text {
+    display: block;
     line-height: 35px;
     font-size: 20px;
     color: rgb(0, 0, 0);
     cursor: pointer;
-    min-width: 25px;
+    min-width: 260px;
     border: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 .text-input::-webkit-input-placeholder {
     color: rgb(0, 0, 0);
+}
+
+.hidden {
+    display: none;
 }

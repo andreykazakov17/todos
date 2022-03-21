@@ -48,18 +48,16 @@ const activeFilter = (e) => {
 }
 
 const getLocalStorage = (key) => {
-    if(localStorage.getItem(key) && localStorage.getItem('todosArr') !== null) {
-        todosArr = parsedArr;
-    }
+    return JSON.parse(localStorage.getItem(key));
 }
 
 const clearLocalStorage = () => {
     localStorage.removeItem('todosArr');
 }
 
-const setLocalStorage = () => {
-    const serializedArr = JSON.stringify(todosArr);
-    localStorage.setItem('todosArr', serializedArr);
+const setLocalStorage = (key, data) => {
+    const serializedArr = JSON.stringify(data);
+    localStorage.setItem(key, serializedArr);
 }
 
 
@@ -77,8 +75,6 @@ const filterTodos = (items, filter) => {
 
 const clearCompleted = () => {
     todosArr = todosArr.filter((item) => !item.completed);
-    render();
-    clearLocalStorage();
 }
 
 const addTodo = (inputValue) => {
@@ -91,14 +87,6 @@ const deleteTodo = (id) => {
 }
 
 const checkTodo = (id) => {
-    // return todosArr.map((item) => {
-    //     if(id === item.id && !item.completed) {
-    //         return {...item, completed: true}
-    //     } else if (id === item.id && item.completed) {
-    //         return {...item, completed: false}
-    //     }
-    //     console.log(todosArr);
-    // })
     return todosArr.map((item) => item.id === id ? { ...item, completed: !item.completed } : item);
     
 }
@@ -144,18 +132,26 @@ const toggleAllTodos = () => {
 const renderTodoItem = ({id, completed, text}) => {
     
     const newTodo = document.createElement('li');
+    const textWrapper = document.createElement('div');
+    const textDiv = document.createElement('div');
     const textInput = document.createElement('input');
 
     textInput.setAttribute('type', 'text');
     textInput.setAttribute('value', text);
-    textInput.setAttribute('placeholder', text);
-    textInput.classList.add('text-input');
-    textInput.setAttribute('onmousedown', 'return false');
+    textInput.classList.add('todo-text');
+    textInput.classList.add('hidden');
 
     newTodo.setAttribute("data-id", id);
-    //newTodo.innerText = text;
     newTodo.classList.add('todo-item');
-    newTodo.appendChild(textInput);
+
+    textDiv.classList.add('todo-text');
+    textDiv.innerText = text;
+
+    textWrapper.classList.add('text-wrapper');
+    textWrapper.appendChild(textDiv);
+    textWrapper.appendChild(textInput);
+
+    newTodo.appendChild(textWrapper);
     todoList.appendChild(newTodo);
 
     // Check button
@@ -182,7 +178,7 @@ const renderTodoItem = ({id, completed, text}) => {
 
 const renderToggleIcon = (todosArr) => {
     if (todosArr.length) {
-        completeAllBtn.style.display = 'block';
+        completeAllBtn.style.display = '';
         filterPanel.style.visibility = 'visible';
     } else {
         completeAllBtn.style.display = 'none';
@@ -241,7 +237,6 @@ const onDeleteHandler = (e) => {
     render();
     if(todosArr.length === 0) {
         console.log('clearLocalStorage');
-        console.log(todosArr);
         clearLocalStorage();
     }
 }
@@ -258,33 +253,41 @@ const onCheckHandler = (e) => {
     render();
 }
 
+const handleClear = () => {
+    clearCompleted();
+    render();
+    clearLocalStorage();
+}
+
 
 // Event Listeners
 todoButton.addEventListener('click', onClickHandler);
 todoList.addEventListener('click', onDeleteHandler);
 todoList.addEventListener('click', (e) => {
     onCheckHandler(e);
-    setLocalStorage();
+    setLocalStorage('todosArr', todosArr);
 });
 completeAllBtn.addEventListener('click', (e) => {
     e.preventDefault();
     toggleAllTodos();
     render();
 });
-clearCompletedBtn.addEventListener('click', clearCompleted);
+clearCompletedBtn.addEventListener('click', handleClear);
 filtersList.addEventListener('click', (e) => {
     onFiltersHandler(e);
 });
-todoButton.addEventListener('click', setLocalStorage);
+todoButton.addEventListener('click', () => {
+    setLocalStorage('todosArr', todosArr);
+});
 document.addEventListener('DOMContentLoaded', () => {
-    const parsedArr = JSON.parse(localStorage.getItem('todosArr'));
 
-    if(parsedArr) {
-        todosArr = parsedArr;
-    }
-    
-    getLocalStorage(localStorage.getItem('todosArr'));
+    todosArr = getLocalStorage('todosArr') || [];
     render();
+});
+window.addEventListener('unload', () => {
+    if (localStorage.getItem('todosArr') === '[]') {
+        clearLocalStorage();
+    }
 });
 
 
@@ -294,42 +297,34 @@ const updateTextHandler = (e) => {
     updateInput(e);
 }
 
-const moveCaretToEnd = (inputObject) => {
-    if (inputObject.selectionStart)
-    {
-     let end = inputObject.value.length;
-     inputObject.setSelectionRange(end,end);
-     inputObject.focus();
-    }
-}
-
-
 const updateInput = (e) => {
     const target = e.target;
-    const valueLength = target.value.length;
-    const id = +e.target.parentElement.dataset['id'];
-    console.log(target.value);
 
-    if (target.tagName !== 'LI' && target.tagName !== 'INPUT') return;
+    if (target.tagName !== 'LI' && target.tagName !== 'DIV') return;
 
-    target.setAttribute('onmousedown', 'return true');
-    target.focus();
-    target.setSelectionRange(valueLength, valueLength);
-    const elem = todosArr.find((item) => item.id === id);
+    const textWrapper = target.parentElement;
+    const textDiv = textWrapper.firstChild;
+    const textInput = textWrapper.lastChild;
+    const valueLength = textInput.value.length;
+    const id = +textWrapper.parentElement.dataset['id'];
 
-    console.log(target.value);
+    textDiv.classList.add('hidden');
+    textInput.classList.remove('hidden');
+    textInput.focus();
+    textInput.setSelectionRange(valueLength, valueLength);
+    
+    textInput.onchange = function() {
 
-    target.onchange = function() {
-        elem.text = target.value;
-        console.log(todosArr);
-        setLocalStorage();
+        if (textInput.value === '') return;
+
+        todosArr = todosArr.map((item) => item.id === id ? { ...item, text: textInput.value } : item);
+        setLocalStorage('todosArr', todosArr);
         render();
     }
-    
-    target.onblur = function() {
-        if(target.value === elem.text) {
-            target.setAttribute('onmousedown', 'return false');
-        }
+
+    textInput.onblur = function() {
+        render();
     }
 }
+
 todoList.addEventListener('dblclick', updateTextHandler);
